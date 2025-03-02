@@ -1,6 +1,8 @@
 import boto3
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 def connect_to_boto(aws_key:str, aws_secret_key:str):
 
@@ -35,3 +37,24 @@ def connect_to_yt(yt_api_key:str):
     except HttpError as e:
 
         return {'error': f"HTTP Error {e.resp.status}: {e.content}"}
+    
+def connect_to_database(db_name:str,
+                        db_password:str,
+                        db_user:str,
+                        db_host:str):
+
+    """
+    Function to connect with database.
+    Args:
+        db_name (str); database name
+        db_passowrd (str); database password
+        db_user (str); user login name
+        db_host (str); host name
+    Returns:
+        session; database connection object
+    """
+
+    engine = create_engine(f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}/{db_name}')
+    Session = sessionmaker(bind=engine)
+
+    return engine, Session
