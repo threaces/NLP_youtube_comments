@@ -1,8 +1,10 @@
-import re
-import pandas as pd
 from typing import Optional, Dict
 from src.get_data import get_content
 from support_elements import title_patterns
+
+import re
+import pandas as pd
+import uuid
 
 def parse_title(title: str, title_patterns: list) -> Optional[Dict]:
     
@@ -194,12 +196,9 @@ def prepare_comments_saving(yt_client, df:pd.DataFrame):
         match_comments = get_comments(item, movie_id)
         comments_desc.append(match_comments)
 
-    counter = 0
-
     for comment in comments_desc:
         for match_data in comment:
-            counter += 1
-            match_data['Id'] = counter
+            match_data['Id'] = uuid.uuid4()
             comments_desc_with_id.append(match_data)
 
     return comments_desc_with_id
