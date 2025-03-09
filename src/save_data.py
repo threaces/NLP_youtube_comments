@@ -17,6 +17,15 @@ yt_client = connect_to_yt(api_key)
 
 def save_data_to_s3(df:pd.DataFrame, aws_client, s3_bucket_name:str):
 
+    """
+    Function to convert pandas dataframe into csv and save csv file into S3 bucket.
+
+    Args:
+        df (pd.Dataframe); Dataframe with data related to video (id, teams, date)
+        aws_client; Client to connect with aws
+        s3_bucket_name (str); Location where user wants to store csv file
+    """
+
     with io.StringIO() as csv_buffer:
         df.to_csv(csv_buffer, index=False)
 
@@ -30,7 +39,16 @@ def save_data_to_s3(df:pd.DataFrame, aws_client, s3_bucket_name:str):
 
         return response
     
-def saving_to_dataframe(yt_playlist:list):
+def saving_to_dataframe(yt_playlist:list) -> pd.DataFrame:
+
+    """
+    Function to save all of data from youtube playlist into dataframe
+
+    Args:
+        yt_playlist (list[str]); List with playlists id
+    Returns:
+        df (pd.Dataframe); Dataframe with information about football matches
+    """
 
     list_of_api_data = []
 

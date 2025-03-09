@@ -6,6 +6,7 @@ from src.connect_to_client import connect_to_database
 from database.models.database_tables import RawComments, Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import IntegrityError
 
 import os
 import logging
@@ -60,16 +61,19 @@ if __name__ == "__main__":
         Base.metadata.create_all(engine)
 
         with Session() as session:
-            exisiting_comments = {row.comment for row in session.query(RawComments.comment).all()}
+            exisiting_comments_ids = {row.id for row in session.query(RawComments.id).all()}
 
-            new_comments = [RawComments(comment=data['Comment'], id=data['Id'], likes=data['Likes'], video_id=data['video_id'], date=data['Date']) for data in comments if data['Comment'] not in exisiting_comments]
+            new_comments = [RawComments(comment=data['Comment'], id=data['Id'], likes=data['Likes'], video_id=data['video_id'], date=data['Date']) for data in comments if data['Id'] not in exisiting_comments_ids]
 
             if new_comments:
                 logger.info(f"Inserting {len(new_comments)} new comments into the database...")
-                session.bulk_save_objects(new_comments)
-                session.commit()
-                logger.info(f"Successfully inserted {len(new_comments)} new comments.")
-                session.query(RawComments).all()
+                try:
+                    session.bulk_save_objects(new_comments)
+                    session.commit()
+                    logger.info(f"Successfully inserted {len(new_comments)} new comments.")
+                except IntegrityError as e:
+                    session.rollback()
+                    logger.error(f"IntegrityError occurred while inserting comments: {e}")
             else:
                 logger.info("No new comments to insert.")
 
